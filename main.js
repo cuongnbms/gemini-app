@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, globalShortcut } = require('electron');
 const path = require('path');
 
 const GEMINI_URL = 'https://gemini.google.com/';
@@ -40,7 +40,25 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+
+  // Cmd+1: Click bard mode menu button, then select fast mode
+  globalShortcut.register('CommandOrControl+1', () => {
+    if (mainWindow) {
+      mainWindow.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-fast']")?.click();
+        }, 100);
+      `);
+    }
+  });
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
