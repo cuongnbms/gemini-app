@@ -35,6 +35,27 @@ function createWindow() {
     mainWindow.webContents.getUserAgent().replace('Electron', '')
   );
 
+  // Inject CSS for full-width chat
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.insertCSS(`
+      /* Full width chat content */
+      .conversation-container,
+      .chat-container,
+      [class*="conversation"],
+      [class*="response-container"],
+      [class*="message-content"] {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Remove content width restrictions */
+      main > div,
+      main > div > div {
+        max-width: 100% !important;
+      }
+    `);
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
