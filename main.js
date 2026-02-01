@@ -37,19 +37,8 @@ function createWindow() {
   win.webContents.on("did-finish-load", () => {
     win.webContents.insertCSS(`
       /* Full width chat content */
-      .conversation-container,
-      .chat-container,
-      [class*="conversation"],
-      [class*="response-container"],
-      [class*="message-content"] {
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-
-      /* Remove content width restrictions */
-      main > div,
-      main > div > div {
-        max-width: 100% !important;
+      .conversation-container[_ngcontent-ng-c1531589041] {
+        max-width: 1200px !important;
       }
     `);
   });
