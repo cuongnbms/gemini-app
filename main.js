@@ -54,6 +54,30 @@ app.whenReady().then(() => {
       `);
     }
   });
+
+  // Cmd+2: Click bard mode menu button, then select thinking mode
+  globalShortcut.register('CommandOrControl+2', () => {
+    if (mainWindow) {
+      mainWindow.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-thinking']")?.click();
+        }, 100);
+      `);
+    }
+  });
+
+  // Cmd+3: Click bard mode menu button, then select pro mode
+  globalShortcut.register('CommandOrControl+3', () => {
+    if (mainWindow) {
+      mainWindow.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-pro']")?.click();
+        }, 100);
+      `);
+    }
+  });
 });
 
 app.on('will-quit', () => {
