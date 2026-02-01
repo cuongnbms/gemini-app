@@ -1,7 +1,7 @@
-const { app, BrowserWindow, shell, globalShortcut } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, shell, globalShortcut } = require("electron");
+const path = require("path");
 
-const GEMINI_URL = 'https://gemini.google.com/';
+const GEMINI_URL = "https://gemini.google.com/";
 
 let mainWindow;
 
@@ -9,13 +9,13 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'Gemini',
-    icon: path.join(__dirname, 'icon.png'),
+    title: "Gemini",
+    icon: path.join(__dirname, "build", "icon.png"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      partition: 'persist:gemini'
-    }
+      partition: "persist:gemini",
+    },
   });
 
   // Load Gemini
@@ -23,20 +23,18 @@ function createWindow() {
 
   // Open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith('https://gemini.google.com')) {
+    if (!url.startsWith("https://gemini.google.com")) {
       shell.openExternal(url);
-      return { action: 'deny' };
+      return { action: "deny" };
     }
-    return { action: 'allow' };
+    return { action: "allow" };
   });
 
   // Set user agent to avoid potential blocks
-  mainWindow.webContents.setUserAgent(
-    mainWindow.webContents.getUserAgent().replace('Electron', '')
-  );
+  mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent().replace("Electron", ""));
 
   // Inject CSS for full-width chat
-  mainWindow.webContents.on('did-finish-load', () => {
+  mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.webContents.insertCSS(`
       /* Full width chat content */
       .conversation-container,
@@ -56,7 +54,7 @@ function createWindow() {
     `);
   });
 
-  mainWindow.on('closed', () => {
+  mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
@@ -65,7 +63,7 @@ app.whenReady().then(() => {
   createWindow();
 
   // Cmd+1: Click bard mode menu button, then select fast mode
-  globalShortcut.register('CommandOrControl+1', () => {
+  globalShortcut.register("CommandOrControl+1", () => {
     if (mainWindow) {
       mainWindow.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
@@ -77,7 +75,7 @@ app.whenReady().then(() => {
   });
 
   // Cmd+2: Click bard mode menu button, then select thinking mode
-  globalShortcut.register('CommandOrControl+2', () => {
+  globalShortcut.register("CommandOrControl+2", () => {
     if (mainWindow) {
       mainWindow.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
@@ -89,7 +87,7 @@ app.whenReady().then(() => {
   });
 
   // Cmd+3: Click bard mode menu button, then select pro mode
-  globalShortcut.register('CommandOrControl+3', () => {
+  globalShortcut.register("CommandOrControl+3", () => {
     if (mainWindow) {
       mainWindow.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
@@ -101,17 +99,17 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('will-quit', () => {
+app.on("will-quit", () => {
   globalShortcut.unregisterAll();
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (mainWindow === null) {
     createWindow();
   }
