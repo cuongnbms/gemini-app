@@ -3,10 +3,10 @@ const path = require("path");
 
 const GEMINI_URL = "https://gemini.google.com/";
 
-let mainWindow;
+const windows = new Set();
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1200,
     height: 800,
     title: "Gemini",
@@ -19,10 +19,10 @@ function createWindow() {
   });
 
   // Load Gemini
-  mainWindow.loadURL(GEMINI_URL);
+  win.loadURL(GEMINI_URL);
 
   // Open external links in default browser
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+  win.webContents.setWindowOpenHandler(({ url }) => {
     if (!url.startsWith("https://gemini.google.com")) {
       shell.openExternal(url);
       return { action: "deny" };
@@ -31,11 +31,11 @@ function createWindow() {
   });
 
   // Set user agent to avoid potential blocks
-  mainWindow.webContents.setUserAgent(mainWindow.webContents.getUserAgent().replace("Electron", ""));
+  win.webContents.setUserAgent(win.webContents.getUserAgent().replace("Electron", ""));
 
   // Inject CSS for full-width chat
-  mainWindow.webContents.on("did-finish-load", () => {
-    mainWindow.webContents.insertCSS(`
+  win.webContents.on("did-finish-load", () => {
+    win.webContents.insertCSS(`
       /* Full width chat content */
       .conversation-container,
       .chat-container,
@@ -54,18 +54,27 @@ function createWindow() {
     `);
   });
 
-  mainWindow.on("closed", () => {
-    mainWindow = null;
+  windows.add(win);
+  win.on("closed", () => {
+    windows.delete(win);
   });
+
+  return win;
 }
 
 app.whenReady().then(() => {
   createWindow();
 
+  // Cmd+N: Open new window
+  globalShortcut.register("CommandOrControl+N", () => {
+    createWindow();
+  });
+
   // Cmd+1: Click bard mode menu button, then select fast mode
   globalShortcut.register("CommandOrControl+1", () => {
-    if (mainWindow) {
-      mainWindow.webContents.executeJavaScript(`
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      win.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
         setTimeout(() => {
           document.querySelector("[data-test-id='bard-mode-option-fast']")?.click();
@@ -76,8 +85,9 @@ app.whenReady().then(() => {
 
   // Cmd+2: Click bard mode menu button, then select thinking mode
   globalShortcut.register("CommandOrControl+2", () => {
-    if (mainWindow) {
-      mainWindow.webContents.executeJavaScript(`
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      win.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
         setTimeout(() => {
           document.querySelector("[data-test-id='bard-mode-option-thinking']")?.click();
@@ -88,8 +98,9 @@ app.whenReady().then(() => {
 
   // Cmd+3: Click bard mode menu button, then select pro mode
   globalShortcut.register("CommandOrControl+3", () => {
-    if (mainWindow) {
-      mainWindow.webContents.executeJavaScript(`
+    const win = BrowserWindow.getFocusedWindow();
+    if (win) {
+      win.webContents.executeJavaScript(`
         document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
         setTimeout(() => {
           document.querySelector("[data-test-id='bard-mode-option-pro']")?.click();
@@ -110,7 +121,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  if (mainWindow === null) {
+  if (windows.size === 0) {
     createWindow();
   }
 });
