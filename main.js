@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, globalShortcut } = require("electron");
+const { app, BrowserWindow, shell } = require("electron");
 const path = require("path");
 
 const GEMINI_URL = "https://gemini.google.com/";
@@ -43,6 +43,41 @@ function createWindow() {
     `);
   });
 
+  // Register keyboard shortcuts scoped to this window
+  win.webContents.on("before-input-event", (event, input) => {
+    if (!input.meta && !input.control) return;
+    if (input.type !== "keyDown") return;
+
+    if (input.key === "n") {
+      event.preventDefault();
+      createWindow();
+    } else if (input.key === "1") {
+      event.preventDefault();
+      win.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-fast']")?.click();
+        }, 100);
+      `);
+    } else if (input.key === "2") {
+      event.preventDefault();
+      win.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-thinking']")?.click();
+        }, 100);
+      `);
+    } else if (input.key === "3") {
+      event.preventDefault();
+      win.webContents.executeJavaScript(`
+        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
+        setTimeout(() => {
+          document.querySelector("[data-test-id='bard-mode-option-pro']")?.click();
+        }, 100);
+      `);
+    }
+  });
+
   windows.add(win);
   win.on("closed", () => {
     windows.delete(win);
@@ -53,54 +88,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
-
-  // Cmd+N: Open new window
-  globalShortcut.register("CommandOrControl+N", () => {
-    createWindow();
-  });
-
-  // Cmd+1: Click bard mode menu button, then select fast mode
-  globalShortcut.register("CommandOrControl+1", () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) {
-      win.webContents.executeJavaScript(`
-        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
-        setTimeout(() => {
-          document.querySelector("[data-test-id='bard-mode-option-fast']")?.click();
-        }, 100);
-      `);
-    }
-  });
-
-  // Cmd+2: Click bard mode menu button, then select thinking mode
-  globalShortcut.register("CommandOrControl+2", () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) {
-      win.webContents.executeJavaScript(`
-        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
-        setTimeout(() => {
-          document.querySelector("[data-test-id='bard-mode-option-thinking']")?.click();
-        }, 100);
-      `);
-    }
-  });
-
-  // Cmd+3: Click bard mode menu button, then select pro mode
-  globalShortcut.register("CommandOrControl+3", () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) {
-      win.webContents.executeJavaScript(`
-        document.querySelector("[data-test-id='bard-mode-menu-button']")?.click();
-        setTimeout(() => {
-          document.querySelector("[data-test-id='bard-mode-option-pro']")?.click();
-        }, 100);
-      `);
-    }
-  });
-});
-
-app.on("will-quit", () => {
-  globalShortcut.unregisterAll();
 });
 
 app.on("window-all-closed", () => {
